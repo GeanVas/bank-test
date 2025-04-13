@@ -1,0 +1,72 @@
+:host {
+  --offset-x: 20px;
+}
+
+.form-container {
+  display: flex;
+  justify-content: center;
+  padding: 40px var(--offset-x);
+  background-color: #f3f4f6;
+}
+
+.register-form {
+  background-color: white;
+  padding: 0 40px 40px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 720px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.register-form h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  margin-inline: calc(var(--offset-x) * 2 * -1);
+  border-bottom: 1px solid black;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem 2rem;
+  margin-bottom: 30px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+input:disabled {
+  background-color: #f3f3f3;
+  color: #999;
+}
+
+input.ng-invalid.ng-touched {
+  border-color: #e53e3e;
+}
+
+.error {
+  color: #e53e3e;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 4rem;
+  margin-top: 4rem;
+}

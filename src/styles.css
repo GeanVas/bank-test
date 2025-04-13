@@ -1,1 +1,65 @@
-/* You can add global styles to this file, and also import other style files */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.global-header {
+  text-align: center;
+  padding: 1.5rem 0;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  top: 0;
+  z-index: 100;
+
+  & a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    color: #1e3a8a;
+    font-size: 1.5rem;
+    font-weight: bold;
+
+    &:visited {
+      color: #1e3a8a;
+    }
+  }
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+}
+
+main {
+  flex: 1;
+}
+
+.btn {
+  padding: 0.8rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  text-decoration: none;
+  min-width: 6rem;
+  text-align: center;
+  color: #1e3a8a;
+
+  &:visited {
+    color: #1e3a8a;
+  }
+}
+
+.btn-primary {
+  background-color: #fef08a;
+}
+
+.btn-reset {
+  background-color: #e0e7ff;
+}
