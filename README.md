@@ -29,3 +29,13 @@ To execute unit tests with [Jest](https://jestjs.io) test runner, use the follow
 ```bash
 ng test
 ```
+
+## Test coverage
+
+To generate a test coverage report, run the following command:
+
+```bash
+npm run coverage
+```
+
+This will create a coverage report in the `coverage/` directory. Open the `index.html` file in a browser to view detailed coverage information.
