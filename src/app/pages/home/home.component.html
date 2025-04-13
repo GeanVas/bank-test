@@ -1,7 +1,12 @@
 <div class="container">
   <div class="header">
     <div class="search-container">
-      <input type="text" placeholder="Search..." class="search-input" (keyup)="filterProducts($event)" />
+      <input
+        type="text"
+        placeholder="Search..."
+        class="search-input"
+        (keyup)="filterProducts($event)"
+      />
     </div>
     <a class="btn btn-primary" href="/form">Agregar</a>
   </div>
@@ -22,22 +27,50 @@
         <tbody>
           <tr *ngFor="let product of displayProducts">
             <td>
-              <img class="logo-circle" [src]="product.logo" [alt]="'logo' + product.name" />
+              <img
+                class="logo-circle"
+                [src]="product.logo"
+                [alt]="'logo' + product.name"
+              />
             </td>
             <td>{{ product.name }}</td>
             <td>{{ product.description }}</td>
-            <td>{{ product.date_release | date: 'dd-MM-yyyy' }}</td>
-            <td>{{ product.date_revision | date: 'dd-MM-yyyy' }}</td>
-            <td><button class="options">...</button></td>
+            <td>{{ product.date_release | date : "dd-MM-yyyy" }}</td>
+            <td>{{ product.date_revision | date : "dd-MM-yyyy" }}</td>
+            <td>
+              <button class="options" (click)="toggleContextMenu(product)">
+                ...
+              </button>
+              <div class="context-menu" *ngIf="activeContextMenu === product">
+                <ul>
+                  <li class="action edit" (click)="editProduct(product)">Editar</li>
+                  <li class="action delete" (click)="deleteProduct(product)">Eliminar</li>
+                  <li class="cancel" (click)="closeContextMenu()">Cancelar</li>
+                </ul>
+              </div>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
 
     <div class="footer">
-      <span>{{ displayProducts.length }} Resultado{{displayProducts.length !== 1 ? 's' : ''}}</span>
-      <select class="pagination-select" [(ngModel)]="itemsPerPage" (change)="onItemsPerPageChange($event)">
-        <option *ngFor="let option of displayItemsPerPageOptions" [value]="option">{{ option }}</option>
+      <span
+        >{{ displayProducts.length }} Resultado{{
+          displayProducts.length !== 1 ? "s" : ""
+        }}</span
+      >
+      <select
+        class="pagination-select"
+        [(ngModel)]="itemsPerPage"
+        (change)="onItemsPerPageChange($event)"
+      >
+        <option
+          *ngFor="let option of displayItemsPerPageOptions"
+          [value]="option"
+        >
+          {{ option }}
+        </option>
       </select>
     </div>
   </div>

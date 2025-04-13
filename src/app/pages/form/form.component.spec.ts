@@ -14,11 +14,21 @@ describe('FormComponent', () => {
     productServiceMock = {
       validateIdExists: jest.fn(),
       createProduct: jest.fn(),
+      updateProduct: jest.fn(),
     };
 
     TestBed.configureTestingModule({
       imports: [FormComponent, ReactiveFormsModule],
       providers: [{ provide: ProductService, useValue: productServiceMock }],
+    });
+
+    Object.defineProperty(window, 'history', {
+      writable: true,
+      value: {
+        state: {
+          product: null,
+        },
+      },
     });
 
     fixture = TestBed.createComponent(FormComponent);
@@ -38,7 +48,9 @@ describe('FormComponent', () => {
     expect(formValues.description).toBe('');
     expect(formValues.logo).toBe('');
     expect(formValues.date_release).toBe(component.todayString);
-    expect(formValues.date_revision).toBe(component.getNextYear(component.today));
+    expect(formValues.date_revision).toBe(
+      component.getNextYear(component.today)
+    );
   });
 
   it('should mark the form as invalid if required fields are missing', () => {
@@ -66,7 +78,9 @@ describe('FormComponent', () => {
     component.onSubmit();
 
     expect(productServiceMock.validateIdExists).toHaveBeenCalledWith('123');
-    expect(window.alert).toHaveBeenCalledWith('ID already exists. Please choose a different ID.');
+    expect(window.alert).toHaveBeenCalledWith(
+      'ID already exists. Please choose a different ID.'
+    );
   });
 
   it('should call ProductService.createProduct and reset the form on successful submission', () => {
@@ -93,7 +107,9 @@ describe('FormComponent', () => {
   it('should handle errors during product creation', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
     productServiceMock.validateIdExists.mockReturnValue(of(false));
-    productServiceMock.createProduct.mockReturnValue(throwError(() => new Error('Error')));
+    productServiceMock.createProduct.mockReturnValue(
+      throwError(() => new Error('Error'))
+    );
 
     component.productForm.patchValue({
       id: '123',
@@ -105,13 +121,96 @@ describe('FormComponent', () => {
 
     component.onSubmit();
 
-    expect(console.error).toHaveBeenCalledWith('An error occurred:', expect.any(Error));
+    expect(console.error).toHaveBeenCalledWith(
+      'An error occurred:',
+      expect.any(Error)
+    );
   });
 
   it('should update date_revision when date_release changes', () => {
     const newDate = '2024-01-01';
     component.onDateChange({ target: { value: newDate } } as any);
 
-    expect(component.productForm.getRawValue().date_revision).toBe(component.getNextYear(new Date(newDate)));
+    expect(component.productForm.getRawValue().date_revision).toBe(
+      component.getNextYear(new Date(newDate))
+    );
+  });
+
+  it('should reset the form to default values on reset', () => {
+    component.productForm.patchValue({
+      id: '123',
+      name: 'Test Product',
+      description: 'Test Description',
+      logo: 'http://example.com/logo.png',
+      date_release: '2024-01-01',
+    });
+
+    component.onReset();
+
+    const formValues = component.productForm.getRawValue();
+    expect(formValues.id).toBe('');
+    expect(formValues.name).toBe('');
+    expect(formValues.description).toBe('');
+    expect(formValues.logo).toBe('');
+    expect(formValues.date_release).toBe(component.todayString);
+    expect(formValues.date_revision).toBe(
+      component.getNextYear(component.today)
+    );
+  });
+
+  it('should call ProductService.updateProduct and reset the form on successful update', () => {
+    jest.spyOn(window, 'alert').mockImplementation(() => {});
+    productServiceMock.updateProduct.mockReturnValue(of({}));
+
+    component.product = {
+      id: '123',
+      name: 'Existing Product',
+      description: 'Existing Description',
+      logo: 'http://example.com/logo.png',
+      date_release: new Date('2024-01-01'),
+      date_revision: new Date('2025-01-01'),
+    };
+
+    component.productForm.patchValue({
+      id: '123',
+      name: 'Updated Product',
+      description: 'Updated Description',
+      logo: 'http://example.com/logo-updated.png',
+      date_release: '2024-01-01',
+    });
+
+    component.onSubmit();
+
+    expect(productServiceMock.updateProduct).toHaveBeenCalled();
+    expect(window.alert).toHaveBeenCalledWith('Product updated successfully!');
+    expect(component.productForm.value.id).toBe('');
+  });
+
+  it('should pre-fill the form with product data from history.state and disable the id field', () => {
+    // Mock a product in history.state
+    const mockProduct = {
+      id: '123',
+      name: 'Test Product',
+      description: 'Test Description',
+      logo: 'http://example.com/logo.png',
+      date_release: '2024-01-01',
+      date_revision: '2025-01-01',
+    };
+    window.history.state.product = mockProduct;
+
+    // Reinitialize the component to pick up the mocked product
+    component.ngOnInit();
+
+    // Verify the form is pre-filled with the product data
+    const formValues = component.productForm.getRawValue();
+    expect(formValues.id).toBe(mockProduct.id);
+    expect(formValues.name).toBe(mockProduct.name);
+    expect(formValues.description).toBe(mockProduct.description);
+    expect(formValues.logo).toBe(mockProduct.logo);
+    expect(formValues.date_release).toBe(mockProduct.date_release);
+    expect(formValues.date_revision).toBe(mockProduct.date_revision);
+
+    // Verify the id field is disabled
+    expect(component.productForm.get('id')?.disabled).toBeTruthy();
   });
 });

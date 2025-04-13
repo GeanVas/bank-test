@@ -82,3 +82,58 @@ button.options {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+
+.context-menu {
+  position: absolute;
+  right: 4rem;
+  background-color: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  padding: 10px;
+  list-style: none;
+}
+
+.context-menu ul {
+  margin: 0;
+  padding: 0;
+}
+
+.context-menu li {
+  padding: 5px 10px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.context-menu li.action {
+  font-weight: bold;
+  color: white;
+  border-radius: 4px;
+  margin: 5px;
+}
+
+.context-menu li.edit {
+  background-color: #007bff;
+}
+
+.context-menu li.edit:hover {
+  background-color: #0056b3;
+}
+
+.context-menu li.delete {
+  background-color: #dc3545;
+}
+
+.context-menu li.delete:hover {
+  background-color: #a71d2a;
+}
+
+.context-menu li.cancel {
+  color: #6c757d;
+  background-color: transparent;
+  font-weight: normal;
+}
+
+.context-menu li.cancel:hover {
+  background-color: #f8f9fa;
+}

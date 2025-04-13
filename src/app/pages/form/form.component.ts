@@ -11,6 +11,7 @@ import { switchMap, of, tap, catchError } from 'rxjs';
 import { ProductService } from '../../core/services/product.service';
 import { urlValidator } from '../../core/validators/url.validator';
 import { Product } from '../../models/product';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-form',
@@ -23,9 +24,10 @@ export class FormComponent implements OnInit {
   private productService = inject(ProductService);
   today: Date = new Date();
   todayString: string = this.today.toISOString().split('T')[0];
-  productForm!: FormGroup; // Use definite assignment assertion (!)
+  productForm!: FormGroup;
+  product: Product | null = null;
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private router: Router) {}
 
   ngOnInit(): void {
     this.productForm = this.fb.group({
@@ -60,6 +62,19 @@ export class FormComponent implements OnInit {
         Validators.required,
       ],
     });
+
+    this.product = history.state.product;
+    if (this.product) {
+      this.productForm.patchValue({
+        id: this.product.id,
+        name: this.product.name,
+        description: this.product.description,
+        logo: this.product.logo,
+        date_release: new Date(this.product.date_release).toISOString().split('T')[0],
+        date_revision: new Date(this.product.date_revision).toISOString().split('T')[0],
+      });
+      this.productForm.get('id')?.disable();
+    }
   }
 
   getNextYear(date: Date): string {
@@ -69,36 +84,18 @@ export class FormComponent implements OnInit {
   }
 
   onSubmit() {
-    if (this.productForm.valid) {
-      const product: Product = this.productForm.getRawValue();
-      product.date_revision = new Date(this.getNextYear(
-        new Date(product.date_release)
-      ));
+    if (!this.productForm.valid) return;
 
-      this.productService
-        .validateIdExists(product.id)
-        .pipe(
-          switchMap((exists) => {
-            if (exists) {
-              alert('ID already exists. Please choose a different ID.');
-              return of(null);
-            }
-            return this.productService.createProduct(product).pipe(
-              tap(() => {
-                alert('Product created successfully!');
-                this.onReset();
-              })
-            );
-          }),
-          catchError((error) => {
-            console.error('An error occurred:', error);
-            return of(null);
-          })
-        )
-        .subscribe();
-    } else {
-      console.log('Form is invalid');
+    const product: Product = this.productForm.getRawValue();
+    product.date_revision = new Date(
+      this.getNextYear(new Date(product.date_release))
+    );
+
+    if (!this.product) {
+      this.createProduct(product);
+      return;
     }
+    this.updateProduct(product);
   }
 
   onReset() {
@@ -118,5 +115,51 @@ export class FormComponent implements OnInit {
     this.productForm.patchValue({
       date_revision: this.getNextYear(selectedDate),
     });
+  }
+
+  private navigateToHome() {
+    this.router.navigate(['/']);
+  }
+
+  private createProduct(product: Product) {
+    this.productService
+      .validateIdExists(product.id)
+      .pipe(
+        switchMap((exists) => {
+          if (exists) {
+            alert('ID already exists. Please choose a different ID.');
+            return of(null);
+          }
+          return this.productService.createProduct(product).pipe(
+            tap(() => {
+              alert('Product created successfully!');
+              this.onReset();
+              this.navigateToHome();
+            })
+          );
+        }),
+        catchError((error) => {
+          console.error('An error occurred:', error);
+          return of(null);
+        })
+      )
+      .subscribe();
+  }
+
+  private updateProduct(product: Product) {
+    this.productService
+      .updateProduct(product)
+      .pipe(
+        tap(() => {
+          alert('Product updated successfully!');
+          this.onReset();
+          this.navigateToHome();
+        }),
+        catchError((error) => {
+          console.error('An error occurred:', error);
+          return of(null);
+        })
+      )
+      .subscribe();
   }
 }

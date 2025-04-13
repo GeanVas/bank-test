@@ -17,10 +17,20 @@ export class ProductService {
   }
 
   createProduct(product: Product): Observable<ApiResponse<Product>> {
-    return this.http.post<ApiResponse<Product>>(`${this.apiUrl}/products`, product);
+    return this.http.post<ApiResponse<Product>>(
+      `${this.apiUrl}/products`,
+      product
+    );
   }
 
   validateIdExists(id: string): Observable<boolean> {
     return this.http.get<boolean>(`${this.apiUrl}/products/verification/${id}`);
+  }
+
+  updateProduct(product: Product): Observable<ApiResponse<Product>> {
+    return this.http.put<ApiResponse<Product>>(
+      `${this.apiUrl}/products/${product.id}`,
+      product
+    );
   }
 }

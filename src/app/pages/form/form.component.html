@@ -94,7 +94,7 @@
     </div>
 
     <div class="form-actions">
-      <button type="button" class="btn btn-reset" (click)="onReset()">
+      <button *ngIf="!product" type="button" class="btn btn-reset" (click)="onReset()">
         Reiniciar
       </button>
       <button
