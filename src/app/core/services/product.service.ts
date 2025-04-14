@@ -33,4 +33,10 @@ export class ProductService {
       product
     );
   }
+
+  deleteProduct(id: string): Observable<ApiResponse<null>> {
+    return this.http.delete<ApiResponse<null>>(
+      `${this.apiUrl}/products/${id}`
+    );
+  }
 }

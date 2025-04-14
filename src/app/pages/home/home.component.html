@@ -44,7 +44,7 @@
               <div class="context-menu" *ngIf="activeContextMenu === product">
                 <ul>
                   <li class="action edit" (click)="editProduct(product)">Editar</li>
-                  <li class="action delete" (click)="deleteProduct(product)">Eliminar</li>
+                  <li class="action delete" (click)="confirmDeleteProduct(product)">Eliminar</li>
                   <li class="cancel" (click)="closeContextMenu()">Cancelar</li>
                 </ul>
               </div>
@@ -75,3 +75,5 @@
     </div>
   </div>
 </div>
+
+<app-dialog #dialog></app-dialog>

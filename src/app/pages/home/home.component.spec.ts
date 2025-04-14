@@ -4,6 +4,7 @@ import { of } from 'rxjs';
 import { ProductService } from '../../core/services/product.service';
 import { HomeComponent } from './home.component';
 import { Router } from '@angular/router';
+import { DialogComponent } from '../../shared/dialog/dialog.component';
 import { Product } from '../../models/product';
 
 describe('HomeComponent', () => {
@@ -23,8 +24,7 @@ describe('HomeComponent', () => {
           ],
         })
       ),
-      createProduct: jest.fn(),
-      validateIdExists: jest.fn(),
+      deleteProduct: jest.fn().mockReturnValue(of({})),
     } as unknown as jest.Mocked<ProductService>;
 
     mockRouter = {
@@ -33,11 +33,23 @@ describe('HomeComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [HomeComponent],
-      providers: [{ provide: ProductService, useValue: mockProductService }],
+      providers: [
+        { provide: ProductService, useValue: mockProductService },
+        { provide: Router, useValue: mockRouter },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(HomeComponent);
     component = fixture.componentInstance;
+
+    // Mock the dialog property
+    component.dialog = {
+      title: '',
+      open: jest.fn(),
+      close: jest.fn(),
+      onConfirmClick: jest.fn(),
+    } as unknown as DialogComponent;
+
     component.ngOnInit();
   });
 
@@ -187,8 +199,8 @@ describe('HomeComponent', () => {
     expect(component.activeContextMenu).toBeNull();
   });
 
-  it('should log the product and close the context menu on delete', () => {
-    const product = {
+  it('should call deleteProduct and update products list on confirmDeleteProduct', () => {
+    const product: Product = {
       id: '123',
       name: 'Product A',
       description: 'Description A',
@@ -196,9 +208,39 @@ describe('HomeComponent', () => {
       date_revision: new Date(),
       logo: '',
     };
-    jest.spyOn(console, 'log');
+
+    jest.spyOn(component.dialog, 'open');
+    jest.spyOn(component.dialog, 'close');
+    jest.spyOn(component, 'deleteProduct');
+
+    component.confirmDeleteProduct(product);
+
+    expect(component.dialog.title).toBe(
+      `¿Estás seguro de eliminar el producto ${product.name}?`
+    );
+    expect(component.dialog.open).toHaveBeenCalled();
+
+    // Simulate confirm action
+    component.dialog.onConfirmClick();
+    expect(component.deleteProduct).toHaveBeenCalledWith(product);
+    expect(component.dialog.close).toHaveBeenCalled();
+  });
+
+  it('should delete a product and update the displayProducts list', () => {
+    const product: Product = {
+      id: '123',
+      name: 'Product A',
+      description: 'Description A',
+      date_release: new Date(),
+      date_revision: new Date(),
+      logo: '',
+    };
+
     component.deleteProduct(product);
-    expect(console.log).toHaveBeenCalledWith('Delete product:', product);
-    expect(component.activeContextMenu).toBeNull();
+
+    expect(mockProductService.deleteProduct).toHaveBeenCalledWith(product.id);
+    expect(component.products.length).toBe(2);
+    expect(component.displayProducts.length).toBe(2);
+    expect(component.products.find((p) => p.id === product.id)).toBeUndefined();
   });
 });

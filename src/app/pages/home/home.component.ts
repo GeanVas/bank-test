@@ -1,19 +1,21 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { ProductService } from '../../core/services/product.service';
 import { Product } from '../../models/product';
 import { Router } from '@angular/router';
+import { DialogComponent } from '../../shared/dialog/dialog.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DialogComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
 })
 export class HomeComponent implements OnInit {
+  @ViewChild('dialog') dialog!: DialogComponent;
   private productService = inject(ProductService);
   displayProducts: Product[] = [];
   products: Product[] = [];
@@ -71,8 +73,20 @@ export class HomeComponent implements OnInit {
     this.closeContextMenu();
   }
 
+  confirmDeleteProduct(product: Product): void {
+    this.dialog.title = `¿Estás seguro de eliminar el producto ${product.name}?`;
+    this.dialog.onConfirmClick = () => {
+      this.deleteProduct(product);
+      this.dialog.close();
+    };
+    this.dialog.open();
+  }
+
   deleteProduct(product: Product): void {
-    console.log('Delete product:', product);
-    this.closeContextMenu();
+    this.productService.deleteProduct(product.id).subscribe(() => {
+      this.closeContextMenu();
+      this.products = this.products.filter((p) => p.id !== product.id);
+      this.updateDisplayProducts();
+    });
   }
 }
