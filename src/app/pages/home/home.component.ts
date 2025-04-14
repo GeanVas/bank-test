@@ -22,6 +22,7 @@ export class HomeComponent implements OnInit {
   itemsPerPage = '5';
   displayItemsPerPageOptions = [5, 10, 20];
   activeContextMenu: Product | null = null;
+  pageNumber = 1;
 
   constructor(private router: Router) {}
 
@@ -39,7 +40,13 @@ export class HomeComponent implements OnInit {
 
   updateDisplayProducts() {
     const itemsPerPage = parseInt(this.itemsPerPage);
-    this.displayProducts = this.products.slice(0, itemsPerPage);
+    const startIndex = (this.pageNumber - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    this.displayProducts = this.products.slice(startIndex, endIndex);
+    if (this.displayProducts.length === 0 && this.pageNumber > 1) {
+      this.pageNumber--;
+      this.updateDisplayProducts();
+    }
   }
 
   filterProducts(event: Event) {
@@ -88,5 +95,27 @@ export class HomeComponent implements OnInit {
       this.products = this.products.filter((p) => p.id !== product.id);
       this.updateDisplayProducts();
     });
+  }
+
+  pageLimit() {
+    const itemsPerPage = parseInt(this.itemsPerPage);
+    const totalPages = Math.ceil(this.products.length / itemsPerPage);
+    return totalPages;
+  }
+
+  nextPage() {
+    const itemsPerPage = parseInt(this.itemsPerPage);
+    const totalPages = Math.ceil(this.products.length / itemsPerPage);
+    if (this.pageNumber < totalPages) {
+      this.pageNumber++;
+      this.updateDisplayProducts();
+    }
+  }
+
+  previousPage() {
+    if (this.pageNumber > 1) {
+      this.pageNumber--;
+      this.updateDisplayProducts();
+    }
   }
 }

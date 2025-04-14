@@ -243,4 +243,54 @@ describe('HomeComponent', () => {
     expect(component.displayProducts.length).toBe(2);
     expect(component.products.find((p) => p.id === product.id)).toBeUndefined();
   });
+
+  it('should calculate the correct total number of pages', () => {
+    component.itemsPerPage = '2';
+    expect(component.pageLimit()).toBe(2);
+
+    component.itemsPerPage = '3';
+    expect(component.pageLimit()).toBe(1);
+
+    component.itemsPerPage = '1';
+    expect(component.pageLimit()).toBe(3);
+  });
+
+  it('should go to the next page if not on the last page', () => {
+    component.itemsPerPage = '2';
+    component.pageNumber = 1;
+
+    component.nextPage();
+    expect(component.pageNumber).toBe(2);
+    expect(component.displayProducts).toEqual([
+      { id: '789', name: 'Product C', description: 'Description C' },
+    ]);
+  });
+
+  it('should not go to the next page if already on the last page', () => {
+    component.itemsPerPage = '2';
+    component.pageNumber = 2;
+
+    component.nextPage();
+    expect(component.pageNumber).toBe(2);
+  });
+
+  it('should go to the previous page if not on the first page', () => {
+    component.itemsPerPage = '2';
+    component.pageNumber = 2;
+
+    component.previousPage();
+    expect(component.pageNumber).toBe(1);
+    expect(component.displayProducts).toEqual([
+      { id: '123', name: 'Product A', description: 'Description A' },
+      { id: '456', name: 'Product B', description: 'Description B' },
+    ]);
+  });
+
+  it('should not go to the previous page if already on the first page', () => {
+    component.itemsPerPage = '2';
+    component.pageNumber = 1;
+
+    component.previousPage();
+    expect(component.pageNumber).toBe(1);
+  });
 });

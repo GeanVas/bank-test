@@ -77,6 +77,27 @@ button.options {
   color: #6b7280;
 }
 
+.pagination {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.pagination button {
+  background-color: #fef08a;
+  color: #1e3a8a;
+  border: none;
+  padding: 0.2rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:disabled {
+    background-color: #e5e7eb;
+    color: #6b7280;
+    cursor: not-allowed;
+  }
+}
+
 .pagination-select {
   padding: 4px 8px;
   border: 1px solid #ccc;
