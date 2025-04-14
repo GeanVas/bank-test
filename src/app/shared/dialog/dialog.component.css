@@ -2,7 +2,7 @@
   border: none;
   border-radius: 0.5rem;
   padding: 0;
-  max-width: 30rem;
+  width: 30rem;
 }
 
 .dialog::backdrop {

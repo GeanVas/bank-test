@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -12,20 +12,27 @@ import { ProductService } from '../../core/services/product.service';
 import { urlValidator } from '../../core/validators/url.validator';
 import { Product } from '../../models/product';
 import { Router } from '@angular/router';
+import { DialogComponent } from '../../shared/dialog/dialog.component';
 
 @Component({
   selector: 'app-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, DialogComponent],
   templateUrl: './form.component.html',
   styleUrls: ['./form.component.css'],
 })
 export class FormComponent implements OnInit {
+  @ViewChild('dialog') dialog!: DialogComponent;
+
   private productService = inject(ProductService);
   today: Date = new Date();
   todayString: string = this.today.toISOString().split('T')[0];
   productForm!: FormGroup;
   product: Product | null = null;
+
+  dialogMessage = '';
+  dialogTitle = '';
+  onDialogConfirm: (() => void) | null = null;
 
   constructor(private fb: FormBuilder, private router: Router) {}
 
@@ -127,19 +134,25 @@ export class FormComponent implements OnInit {
       .pipe(
         switchMap((exists) => {
           if (exists) {
-            alert('ID already exists. Please choose a different ID.');
+            this.showDialog(
+              'Error',
+              'ID already exists. Please choose a different ID.',
+              null
+            );
             return of(null);
           }
           return this.productService.createProduct(product).pipe(
             tap(() => {
-              alert('Product created successfully!');
-              this.onReset();
-              this.navigateToHome();
+              this.showDialog('Success', 'Product created successfully!', () => {
+                this.onReset();
+                this.navigateToHome();
+              });
             })
           );
         }),
         catchError((error) => {
           console.error('An error occurred:', error);
+          this.showDialog('Error', 'An error occurred while creating the product.', null);
           return of(null);
         })
       )
@@ -151,15 +164,31 @@ export class FormComponent implements OnInit {
       .updateProduct(product)
       .pipe(
         tap(() => {
-          alert('Product updated successfully!');
-          this.onReset();
-          this.navigateToHome();
+          this.showDialog('Success', 'Product updated successfully!', () => {
+            this.onReset();
+            this.navigateToHome();
+          });
         }),
         catchError((error) => {
           console.error('An error occurred:', error);
+          this.showDialog('Error', 'An error occurred while updating the product.', null);
           return of(null);
         })
       )
       .subscribe();
+  }
+
+  private showDialog(title: string, message: string, onConfirm: (() => void) | null) {
+    this.dialogTitle = title;
+    this.dialogMessage = message;
+    this.onDialogConfirm = onConfirm;
+    this.dialog.showCancel = onConfirm !== null;
+    this.dialog.open();
+  }
+
+  onDialogConfirmClick() {
+    if (this.onDialogConfirm) {
+      this.onDialogConfirm();
+    }
   }
 }

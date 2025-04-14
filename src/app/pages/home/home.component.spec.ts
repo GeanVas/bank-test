@@ -31,7 +31,7 @@ describe('HomeComponent', () => {
       navigate: jest.fn(),
     } as unknown as jest.Mocked<Router>;
 
-    await TestBed.configureTestingModule({
+    TestBed.configureTestingModule({
       imports: [HomeComponent],
       providers: [
         { provide: ProductService, useValue: mockProductService },
@@ -42,7 +42,6 @@ describe('HomeComponent', () => {
     fixture = TestBed.createComponent(HomeComponent);
     component = fixture.componentInstance;
 
-    // Mock the dialog property
     component.dialog = {
       title: '',
       open: jest.fn(),

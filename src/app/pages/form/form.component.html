@@ -107,3 +107,9 @@
     </div>
   </form>
 </div>
+
+<app-dialog #dialog 
+  [message]="dialogMessage" 
+  [title]="dialogTitle"
+  (confirm)="onDialogConfirmClick()"
+></app-dialog>

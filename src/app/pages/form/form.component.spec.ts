@@ -4,6 +4,7 @@ import { of, throwError } from 'rxjs';
 
 import { FormComponent } from './form.component';
 import { ProductService } from '../../core/services/product.service';
+import { DialogComponent } from '../../shared/dialog/dialog.component';
 
 describe('FormComponent', () => {
   let component: FormComponent;
@@ -19,8 +20,10 @@ describe('FormComponent', () => {
 
     TestBed.configureTestingModule({
       imports: [FormComponent, ReactiveFormsModule],
-      providers: [{ provide: ProductService, useValue: productServiceMock }],
-    });
+      providers: [
+        { provide: ProductService, useValue: productServiceMock },
+      ],
+    }).compileComponents();
 
     Object.defineProperty(window, 'history', {
       writable: true,
@@ -33,7 +36,15 @@ describe('FormComponent', () => {
 
     fixture = TestBed.createComponent(FormComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    component.dialog = {
+      title: '',
+      message: '',
+      open: jest.fn(),
+      close: jest.fn(),
+      onConfirmClick: jest.fn(),
+      showCancel: false,
+    } as unknown as DialogComponent;
+    
     component.ngOnInit();
   });
 
@@ -63,8 +74,7 @@ describe('FormComponent', () => {
     expect(component.productForm.valid).toBeFalsy();
   });
 
-  it('should call ProductService.validateIdExists and show an alert if ID exists', () => {
-    jest.spyOn(window, 'alert').mockImplementation(() => {});
+  it('should call ProductService.validateIdExists and show a dialog if ID exists', () => {
     productServiceMock.validateIdExists.mockReturnValue(of(true));
 
     component.productForm.patchValue({
@@ -74,17 +84,19 @@ describe('FormComponent', () => {
       logo: 'http://example.com/logo.png',
       date_release: component.todayString,
     });
+    jest.spyOn(component.dialog, 'open');
 
     component.onSubmit();
 
     expect(productServiceMock.validateIdExists).toHaveBeenCalledWith('123');
-    expect(window.alert).toHaveBeenCalledWith(
+    expect(component.dialog.open).toHaveBeenCalled();
+    expect(component.dialogTitle).toBe('Error');
+    expect(component.dialogMessage).toBe(
       'ID already exists. Please choose a different ID.'
     );
   });
 
-  it('should call ProductService.createProduct and reset the form on successful submission', () => {
-    jest.spyOn(window, 'alert').mockImplementation(() => {});
+  it('should call ProductService.createProduct and show a success dialog on successful submission', () => {
     productServiceMock.validateIdExists.mockReturnValue(of(false));
     productServiceMock.createProduct.mockReturnValue(of({}));
 
@@ -95,16 +107,19 @@ describe('FormComponent', () => {
       logo: 'http://example.com/logo.png',
       date_release: component.todayString,
     });
+    jest.spyOn(component.dialog, 'open');
+    jest.spyOn(component.dialog, 'close');
 
     component.onSubmit();
 
     expect(productServiceMock.validateIdExists).toHaveBeenCalledWith('123');
     expect(productServiceMock.createProduct).toHaveBeenCalled();
-    expect(window.alert).toHaveBeenCalledWith('Product created successfully!');
-    expect(component.productForm.value.id).toBe('');
+    expect(component.dialog.open).toHaveBeenCalled();
+    expect(component.dialogTitle).toBe('Success');
+    expect(component.dialogMessage).toBe('Product created successfully!');
   });
 
-  it('should handle errors during product creation', () => {
+  it('should handle errors during product creation and show an error dialog', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
     productServiceMock.validateIdExists.mockReturnValue(of(false));
     productServiceMock.createProduct.mockReturnValue(
@@ -118,12 +133,19 @@ describe('FormComponent', () => {
       logo: 'http://example.com/logo.png',
       date_release: component.todayString,
     });
+    jest.spyOn(component.dialog, 'open');
+    jest.spyOn(component.dialog, 'close');
 
     component.onSubmit();
 
     expect(console.error).toHaveBeenCalledWith(
       'An error occurred:',
       expect.any(Error)
+    );
+    expect(component.dialog.open).toHaveBeenCalled();
+    expect(component.dialogTitle).toBe('Error');
+    expect(component.dialogMessage).toBe(
+      'An error occurred while creating the product.'
     );
   });
 
@@ -158,8 +180,7 @@ describe('FormComponent', () => {
     );
   });
 
-  it('should call ProductService.updateProduct and reset the form on successful update', () => {
-    jest.spyOn(window, 'alert').mockImplementation(() => {});
+  it('should call ProductService.updateProduct and show a success dialog on successful update', () => {
     productServiceMock.updateProduct.mockReturnValue(of({}));
 
     component.product = {
@@ -178,12 +199,15 @@ describe('FormComponent', () => {
       logo: 'http://example.com/logo-updated.png',
       date_release: '2024-01-01',
     });
+    jest.spyOn(component.dialog, 'open');
+    jest.spyOn(component.dialog, 'close');
 
     component.onSubmit();
 
     expect(productServiceMock.updateProduct).toHaveBeenCalled();
-    expect(window.alert).toHaveBeenCalledWith('Product updated successfully!');
-    expect(component.productForm.value.id).toBe('');
+    expect(component.dialog.open).toHaveBeenCalled();
+    expect(component.dialogTitle).toBe('Success');
+    expect(component.dialogMessage).toBe('Product updated successfully!');
   });
 
   it('should pre-fill the form with product data from history.state and disable the id field', () => {
