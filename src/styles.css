@@ -38,6 +38,8 @@ body {
 
 main {
   flex: 1;
+  display: flex;
+  justify-content: center;
 }
 
 .btn {
